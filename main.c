@@ -1,7 +1,7 @@
 #include "call.c"
 
-int main()
+int main(int argc, char *argv[])
 {
-    call("app");
+    call("app", "");
     return 0;
 }

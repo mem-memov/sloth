@@ -1,9 +1,18 @@
 #include <stdio.h>
 #include "call.c"
 
-int main()
+int main(int argc, char *argv[])
 {
-    printf("I am applying!\n");
-    call("service");
+    int i;
+    i = 100;
+
+    while (i > 0) {
+        i = i-1;
+
+        printf("I am applying!\n");
+        call("service", "user");
+        call("service", "myself");
+    }
+
     return 0;
 }
