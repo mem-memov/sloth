@@ -4,11 +4,16 @@
 
 void call(char * fn)
 {
+    char * template;
+    size_t length;
+    char * command;
+
     printf("I am calling %s!\n", fn);
 
-    char * template = "gcc %s.c -o %s && ./%s";
-    size_t length = strlen(template) + strlen(fn) * 3;
-    char * command = malloc(sizeof(char) * (length + 1));
+    template = "gcc -Wall -ansi -pedantic %s.c -o %s && ./%s";
+    length = strlen(template) + strlen(fn) * 3;
+    command = malloc(sizeof(char) * (length + 1));
+
     sprintf(command, template, fn, fn, fn);
 
     system(command);
