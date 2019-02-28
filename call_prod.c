@@ -7,6 +7,7 @@ void call(char * fn, char * args)
     char * template;
     size_t length;
     char * command;
+    int fileExists;
 
     printf("I am calling %s!\n", fn);
 
