@@ -1,14 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-
-
-
-static int exists(char * file)
-{
-    return access( file, F_OK ) != -1;
-}
 
 static void compile(char * fn)
 {
@@ -44,9 +36,37 @@ static void execute(char * fn, char * args)
     free(command);
 }
 
+static int lock(char * fn)
+{
+    char * lockExtension;
+    char * lockFile;
+    size_t length;
+    FILE * filePointer;
+
+    lockExtension = ".lock";
+    length = strlen(fn) + strlen(lockExtension);
+    lockFile = malloc(sizeof(char) * (length + 1));
+
+    filePointer = fopen(lockFile, "w");
+    
+    free(lockFile);
+
+    if ( ! filePointer ) {
+        return 0;
+    }
+
+    fclose(filePointer);
+
+    return 1;
+}
+
 void call(char * fn, char * args)
 {
-    if ( ! exists(fn) ) {
+    int hasManagedLocking;
+
+    hasManagedLocking = lock(fn);
+
+    if ( hasManagedLocking ) {
         compile(fn);
     }
 
