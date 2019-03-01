@@ -11,3 +11,5 @@ Compile and run
 Debug
 
     gcc -g main.c -o main && gdb ./main
+
+    rm *.lock && ./run.sh

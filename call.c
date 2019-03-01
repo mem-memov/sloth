@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 
 static void compile(char * fn)
 {
@@ -36,15 +37,11 @@ static void execute(char * fn, char * args)
     free(command);
 }
 
-static int lock(char * fn)
+static int exists(char * fn)
 {
     char * template;
     char * lockFile;
     size_t length;
-    FILE * filePointer;
-    char content;
-
-    printf("locking %s\n", fn);
 
     template = "%s.lock";
     length = strlen(template) + strlen(fn);
@@ -53,6 +50,37 @@ static int lock(char * fn)
     sprintf(lockFile, template, fn);
 
     printf("locking %s\n", lockFile);
+
+    filePointer = fopen(lockFile, "r");
+
+    if ( filePointer ) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int lock(char * fn)
+{
+    char * template;
+    char * lockFile;
+    size_t length;
+    FILE * filePointer;
+    char content;
+
+    template = "%s.lock";
+    length = strlen(template) + strlen(fn);
+    lockFile = malloc(sizeof(char) * (length + 1));
+
+    sprintf(lockFile, template, fn);
+
+    printf("locking %s\n", lockFile);
+
+    filePointer = fopen(lockFile, "r");
+
+    if ( filePointer ) {
+        return 0;
+    }
 
     filePointer = fopen(lockFile, "w+");
     
@@ -64,11 +92,13 @@ static int lock(char * fn)
 
     content = fgetc(filePointer);
 
-    if (content == 's') {
+    printf("reading %d\n", content);
+
+    if (content == 33) {
         return 0;
     }
 
-    fputc('s', filePointer);
+    fputc(33, filePointer);
     
     fclose(filePointer);
 
@@ -77,13 +107,20 @@ static int lock(char * fn)
 
 void call(char * fn, char * args)
 {
+    int lockExists;
     int hasManagedLocking;
 
     printf("calling %s\n", fn);
 
+    lockExists = exists(fn);
+
+    if () {
+
+    }
+
     hasManagedLocking = lock(fn);
 
-    printf("hasManagedLocking %d\n", hasManagedLocking);
+    printf("hasManagedLocking %s %d\n", fn, hasManagedLocking);
 
     if ( hasManagedLocking ) {
         compile(fn);
