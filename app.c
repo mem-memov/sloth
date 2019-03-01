@@ -4,7 +4,7 @@
 int main(int argc, char *argv[])
 {
     int i;
-    i = 100;
+    i = 10;
 
     while (i > 0) {
         i = i-1;

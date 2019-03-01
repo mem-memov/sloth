@@ -1,13 +1,14 @@
 #!/bin/bash
 
+gcc main.c -o main
+
 ATTEMPT=1
 
-set
-while [[ "${ATTEMPT}" -lt 100 ]]; do
+while [[ "${ATTEMPT}" -lt 10 ]]; do
 
     ATTEMPT=$(( ${ATTEMPT} + 1 ))
 
-    gcc main.c -o main && ./main &
+    ./main &
 
 done
 
