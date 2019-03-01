@@ -4,5 +4,8 @@
 # Unignore all with extensions
 !*.*
 
+# ignore lock files
+*.lock
+
 # Unignore all dirs
 !*/

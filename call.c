@@ -38,16 +38,23 @@ static void execute(char * fn, char * args)
 
 static int lock(char * fn)
 {
-    char * lockExtension;
+    char * template;
     char * lockFile;
     size_t length;
     FILE * filePointer;
+    char content;
 
-    lockExtension = ".lock";
-    length = strlen(fn) + strlen(lockExtension);
+    printf("locking %s\n", fn);
+
+    template = "%s.lock";
+    length = strlen(template) + strlen(fn);
     lockFile = malloc(sizeof(char) * (length + 1));
 
-    filePointer = fopen(lockFile, "w");
+    sprintf(lockFile, template, fn);
+
+    printf("locking %s\n", lockFile);
+
+    filePointer = fopen(lockFile, "w+");
     
     free(lockFile);
 
@@ -55,6 +62,14 @@ static int lock(char * fn)
         return 0;
     }
 
+    content = fgetc(filePointer);
+
+    if (content == 's') {
+        return 0;
+    }
+
+    fputc('s', filePointer);
+    
     fclose(filePointer);
 
     return 1;
@@ -64,7 +79,11 @@ void call(char * fn, char * args)
 {
     int hasManagedLocking;
 
+    printf("calling %s\n", fn);
+
     hasManagedLocking = lock(fn);
+
+    printf("hasManagedLocking %d\n", hasManagedLocking);
 
     if ( hasManagedLocking ) {
         compile(fn);
