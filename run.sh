@@ -10,6 +10,8 @@ while [[ "${ATTEMPT}" -lt 100 ]]; do
 
     ./main &
 
+    sleep 1
+
 done
 
 wait 

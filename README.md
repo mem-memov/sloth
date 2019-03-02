@@ -12,4 +12,4 @@ Debug
 
     gcc -g main.c -o main && gdb -tui ./main
 
-    rm *.lock && ./run.sh
+    rm */*.lock && ./run.sh

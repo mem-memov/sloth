@@ -2,6 +2,6 @@
 
 int main(int argc, char *argv[])
 {
-    call("app", "");
+    call("sub/project", "");
     return 0;
 }
