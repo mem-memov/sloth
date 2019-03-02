@@ -45,9 +45,6 @@ static int checkCompilationFinished(char * lockFile)
 
         fgets(content, 255, filePointer);
 
-        printf("lockFile %s\n", lockFile);
-        printf("content %s\n", content);
-
         if ( strcmp(content, "compiled") == 0) {
             compilationFinished = 1;
         } else {
@@ -104,8 +101,6 @@ static void executeAfterCompilation(char * lockFile, char * fn, char * args)
     do {
         compilationFinished = checkCompilationFinished(lockFile);
 
-        printf("compilationFinished %d\n", compilationFinished);
-
         if ( compilationFinished ) {
             execute(fn, args);
         }
@@ -119,8 +114,6 @@ static int lock(char * lockFile)
     char content[255];
     int hasManagedLocking;
 
-    printf("locking %s\n", lockFile);
-
     filePointer = fopen(lockFile, "w");
 
     if ( ! filePointer ) {
@@ -128,8 +121,6 @@ static int lock(char * lockFile)
         hasManagedLocking = 0;
 
     } else {
-
-        printf("processIdentifier %d\n", getpid());
 
         sprintf(processIdentifier, "%d", getpid()); 
 
@@ -142,8 +133,6 @@ static int lock(char * lockFile)
         
         fgets(content, 255, filePointer);
         fclose(filePointer);
-
-        printf("content %s\n", content);
 
         if ( strcmp(content, processIdentifier) == 0) {
             hasManagedLocking = 1;
@@ -170,20 +159,14 @@ void call(char * fn, char * args)
     int lockFileExists;
     int hasManagedLocking;
 
-    printf("calling %s\n", fn);
-
     lockFile = nameLockFile(fn);
 
     lockFileExists = checkLockFileExists(lockFile);
-
-    printf("nameLockFile %s\n", lockFile);
-    printf("lockFileExists %d\n", lockFileExists);
 
     if ( lockFileExists ) {
         executeAfterCompilation(lockFile, fn, args);
     } else {
         hasManagedLocking = lock(lockFile);
-        printf("hasManagedLocking %d\n", hasManagedLocking);
         if (hasManagedLocking) {
             compile(fn);
             finishCompilation(lockFile);
