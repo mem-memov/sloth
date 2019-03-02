@@ -41,18 +41,24 @@ static int checkCompilationFinished(char * lockFile)
 
     filePointer = fopen(lockFile, "r");
 
-    fgets(content, 255, filePointer);
+    if ( filePointer ) {
 
-    printf("lockFile %s\n", lockFile);
-    printf("content %s\n", content);
+        fgets(content, 255, filePointer);
 
-    if ( strcmp(content, "compiled") == 0) {
-        compilationFinished = 1;
+        printf("lockFile %s\n", lockFile);
+        printf("content %s\n", content);
+
+        if ( strcmp(content, "compiled") == 0) {
+            compilationFinished = 1;
+        } else {
+            compilationFinished = 0;
+        }
+
+        fclose(filePointer);
+
     } else {
-        compilationFinished = 0;
+        
     }
-
-    fclose(filePointer);
 
     return compilationFinished;
 }
@@ -152,8 +158,10 @@ static int lock(char * lockFile)
 static void finishCompilation(char * lockFile)
 {
     FILE * filePointer;
+
     filePointer = fopen(lockFile, "w");
     fputs("compiled", filePointer);
+    fclose(filePointer);
 }
 
 void call(char * fn, char * args)
@@ -179,6 +187,7 @@ void call(char * fn, char * args)
         if (hasManagedLocking) {
             compile(fn);
             finishCompilation(lockFile);
+            execute(fn, args);
         } else {
             executeAfterCompilation(lockFile, fn, args);
         }
