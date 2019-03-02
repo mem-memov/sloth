@@ -4,7 +4,7 @@ gcc main.c -o main
 
 ATTEMPT=1
 
-while [[ "${ATTEMPT}" -lt 10 ]]; do
+while [[ "${ATTEMPT}" -lt 100 ]]; do
 
     ATTEMPT=$(( ${ATTEMPT} + 1 ))
 
