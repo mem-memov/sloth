@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/file.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 static char * nameLockFile(char * fn)
@@ -66,7 +68,9 @@ static void compile(char * fn)
     size_t length;
     char * command;
 
-    template = "gcc -Wall -ansi -pedantic %s.c -o %s";
+    printf("compiling %s\n", fn);
+
+    template = "gcc -Wall %s.c -o %s";
     length = strlen(template) + strlen(fn) * 2;
     command = malloc(sizeof(char) * (length + 1));
 
@@ -77,27 +81,28 @@ static void compile(char * fn)
     free(command);
 }
 
-static void execute(char * fn, int argc, char * argv[])
+static void execute(char * fn[])
 {
-    pid_t pid;
-    char ** args;
+    pid_t childProcessIdentifier;
 
-    args = malloc(sizeof(char *) * (argc + 1));
+    printf("executing %s\n", fn[0]);
 
-    memcpy(args, argv, sizeof(char *) * argc);
+    childProcessIdentifier = fork();
 
-    args[argc] = NULL;
-
-    pid = fork();
-
-    if (pid == 0) {
-        execv(fn, args);
+    if ( childProcessIdentifier == -1 ) {
+        printf("Faild forking %s", fn[0]);
     }
 
-    free(args);
+    if (childProcessIdentifier == 0) {
+        execv(fn[0], fn);
+    }
+
+    if (childProcessIdentifier > 0) {
+        waitpid(childProcessIdentifier, 0, 0);
+    }
 }
 
-static void executeAfterCompilation(char * lockFile, char * fn, int argc, char * argv[])
+static void executeAfterCompilation(char * lockFile, char * fn[])
 {
     int compilationFinished;
 
@@ -105,7 +110,7 @@ static void executeAfterCompilation(char * lockFile, char * fn, int argc, char *
         compilationFinished = checkCompilationFinished(lockFile);
 
         if ( compilationFinished ) {
-            execute(fn, argc, argv);
+            execute(fn);
         }
     } while ( ! compilationFinished );
 }
@@ -156,26 +161,28 @@ static void finishCompilation(char * lockFile)
     fclose(filePointer);
 }
 
-void call(char * fn, int argc, char * argv[])
+void call(char * fn[])
 {
     char * lockFile;
     int lockFileExists;
     int hasManagedLocking;
 
-    lockFile = nameLockFile(fn);
+    printf("Call to %s\n", fn[0]);
+
+    lockFile = nameLockFile(fn[0]);
 
     lockFileExists = checkLockFileExists(lockFile);
 
     if ( lockFileExists ) {
-        executeAfterCompilation(lockFile, fn, argc, argv);
+        executeAfterCompilation(lockFile, fn);
     } else {
         hasManagedLocking = lock(lockFile);
         if (hasManagedLocking) {
-            compile(fn);
+            compile(fn[0]);
             finishCompilation(lockFile);
-            execute(fn, argc, argv);
+            execute(fn);
         } else {
-            executeAfterCompilation(lockFile, fn, argc, argv);
+            executeAfterCompilation(lockFile, fn);
         }
     }
 

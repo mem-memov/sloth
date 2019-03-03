@@ -2,6 +2,8 @@
 
 int main(int argc, char *argv[])
 {
-    call("sub/project", argc-1, argv + 1);
+    static char * fn[] = {"sub/project", NULL};
+    call(fn);
+
     return 0;
 }
