@@ -77,24 +77,27 @@ static void compile(char * fn)
     free(command);
 }
 
-static void execute(char * fn, char * args)
+static void execute(char * fn, int argc, char * argv[])
 {
-    char * template;
-    size_t length;
-    char * command;
+    pid_t pid;
+    char ** args;
 
-    template = "./%s %s";
-    length = strlen(template) + strlen(fn) + strlen(args);
-    command = malloc(sizeof(char) * (length + 1));
+    args = malloc(sizeof(char *) * (argc + 1));
 
-    sprintf(command, template, fn, args);
+    memcpy(args, argv, sizeof(char *) * argc);
 
-    system(command);
+    args[argc] = NULL;
 
-    free(command);
+    pid = fork();
+
+    if (pid == 0) {
+        execv(fn, args);
+    }
+
+    free(args);
 }
 
-static void executeAfterCompilation(char * lockFile, char * fn, char * args)
+static void executeAfterCompilation(char * lockFile, char * fn, int argc, char * argv[])
 {
     int compilationFinished;
 
@@ -102,7 +105,7 @@ static void executeAfterCompilation(char * lockFile, char * fn, char * args)
         compilationFinished = checkCompilationFinished(lockFile);
 
         if ( compilationFinished ) {
-            execute(fn, args);
+            execute(fn, argc, argv);
         }
     } while ( ! compilationFinished );
 }
@@ -153,7 +156,7 @@ static void finishCompilation(char * lockFile)
     fclose(filePointer);
 }
 
-void call(char * fn, char * args)
+void call(char * fn, int argc, char * argv[])
 {
     char * lockFile;
     int lockFileExists;
@@ -164,15 +167,15 @@ void call(char * fn, char * args)
     lockFileExists = checkLockFileExists(lockFile);
 
     if ( lockFileExists ) {
-        executeAfterCompilation(lockFile, fn, args);
+        executeAfterCompilation(lockFile, fn, argc, argv);
     } else {
         hasManagedLocking = lock(lockFile);
         if (hasManagedLocking) {
             compile(fn);
             finishCompilation(lockFile);
-            execute(fn, args);
+            execute(fn, argc, argv);
         } else {
-            executeAfterCompilation(lockFile, fn, args);
+            executeAfterCompilation(lockFile, fn, argc, argv);
         }
     }
 
